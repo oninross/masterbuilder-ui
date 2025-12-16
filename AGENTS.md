@@ -1,113 +1,394 @@
-## ⚛️ AGENTS.md for React/Next.js (TypeScript)
+## 🤖 AGENTS.md: AI Assistant Instructions
 
-This file provides specific instructions for AI code assistants working on this **React/Next.js** project using **TypeScript**.
+This file provides **specific implementation instructions** for AI code assistants working on this **React Component Library** using **TypeScript**.
 
-### 1. ⚙️ Project Setup and Execution
-
-| Command             | Description                                             |
-| :------------------ | :------------------------------------------------------ |
-| `npm install`       | Install all required dependencies.                      |
-| `npm run dev`       | Start the Next.js development server.                   |
-| `npm run build`     | Build the project for production.                       |
-| `npm run start`     | Start the production server after a build.              |
-| `npx vitest`        | Run unit tests using Vitest (Storybook plugin enabled). |
-| `npm run storybook` | Start the Storybook development server.                 |
+> **Note:** For required developer skills and learning resources, see [SKILLS.md](./SKILLS.md).
 
 ---
 
-### 2. ✅ Testing
+### 1. ⚙️ Available Commands
 
-- **Primary Tool:** **Vitest** and **React Testing Library**.
-- **Test Location:** Tests must be **colocated** with the component.
-- **Requirement:** Every new component, hook, or API endpoint must have a corresponding test file ensuring at least **80% code coverage**.
+| Command                   | Purpose                                |
+| :------------------------ | :------------------------------------- |
+| `npm install`             | Install all dependencies               |
+| `npm run storybook`       | Start Storybook dev server (port 6006) |
+| `npm run build-storybook` | Build static Storybook                 |
+| `npm run build`           | Build component library with Rollup    |
+| `npx vitest`              | Run unit tests with Vitest             |
+| `npm run lint`            | Lint source files with ESLint          |
+| `npm run format`          | Format code with Prettier              |
 
 ---
 
-### 3. 🎨 Code Style and Architecture
+### 2. 🏗️ Component Generation Workflow
 
-#### A. File & Folder Structure
+When creating a new component, **ALWAYS** follow this exact sequence:
 
-- **Atomic Design Placement:**
-  - **Atoms:** `src/app/components/atoms/` (Buttons, Inputs).
-  - **Molecules:** `src/app/components/molecules/` (Search Bar).
-  - **Organisms:** `src/app/components/organisms/` (Headers, Cards).
-- **Mandatory Deliverables:** When generating a component, **ALWAYS** create the component folder containing these **5 files**:
-  1. `index.ts` (Barrel file exporting default: `export { default } from './[Component]';`)
-  2. `[Component].tsx` (Main component)
-  3. `[Component].styles.scss` (Standard SCSS, NO Modules)
-  4. `[Component].types.ts` (Interfaces/Types)
-  5. `[Component].test.tsx` (Unit Tests)
+#### Step 1: Check for Design Tokens
 
-#### B. Component Conventions
+**BEFORE** generating any component code:
 
-- **Exports Pattern:**
-  - **Component File (`Button.tsx`):** Use `export default`.
-    ```tsx
-    const Button: React.FC<ButtonProps> = ({ children }) => { ... };
-    export default Button;
-    ```
-  - **Barrel File (`index.ts`):** Re-export the default.
-    ```ts
-    export { default } from './Button';
-    ```
-- **Directives:** Default to Server Components. Add `'use client';` at the top only if hooks or browser APIs are needed.
+1. Check if `src/app/styles/variables.css` exists
+2. If **NOT present**, **IMMEDIATELY create it** with this starter template:
 
-#### C. Styling (BEM Methodology)
+```css
+:root {
+  /* Colors */
+  --color-primary: #0070f3;
+  --color-secondary: #7928ca;
+  --color-text: #333;
+  --color-text-light: #666;
+  --color-background: #fff;
+  --color-border: #e1e1e1;
 
-- **Methodology:** Use **BEM** (Block Element Modifier).
-- **File Naming:** Use `[Component].styles.scss`.
-- **🚫 RESTRICTION:** **DO NOT** use CSS Modules (`.module.scss`).
-- **Global Tokens:** All color, spacing, and typography values **must** be defined as **CSS Variables (tokens)** in `src/app/styles/variables.css`.
-  - **Creation Mandate:** **If `src/app/styles/variables.css` is not present, the AI must create it** with a basic set of design tokens (e.g., `--color-primary`, `--spacing-md`, etc.).
-- **Implementation:**
-  - Import styles globally in the component: `import "./Button.styles.scss";`
-  - **SCSS Usage:** Always reference the tokens (e.g., `background-color: var(--color-primary);`).
-  - **Markup Example:**
-    ```tsx
-    <div className="card">
-      <div className="card__header card__header--active">Title</div>
-    </div>
-    ```
-  - **SCSS Example:**
-    ```scss
-    .card {
-      &__header {
-        &--active { ... }
-      }
+  /* Spacing Scale */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+
+  /* Typography */
+  --font-size-sm: 14px;
+  --font-size-md: 16px;
+  --font-size-lg: 18px;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 700;
+}
+```
+
+#### Step 2: Create Component Folder Structure
+
+For a component named `Button` in the **atoms** category, create:
+
+```
+src/components/atoms/Button/
+├── index.ts                  # Barrel export
+├── Button.tsx                # Component implementation
+├── Button.styles.scss        # BEM styles (NO CSS Modules)
+├── Button.types.ts           # TypeScript interfaces
+└── Button.test.tsx           # Vitest tests
+```
+
+**Folder Locations:**
+
+- **Atoms:** `src/components/atoms/` (Buttons, Inputs, Icons)
+- **Molecules:** `src/components/molecules/` (SearchBar, FormField)
+- **Organisms:** `src/components/organisms/` (Header, Card, Modal)
+
+#### Step 3: Implement the 5 Required Files
+
+**1. `Button.types.ts`** - Define TypeScript interfaces first:
+
+```tsx
+export interface ButtonProps {
+  children: React.ReactNode;
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+  onClick?: () => void;
+}
+```
+
+**2. `Button.tsx`** - Component implementation:
+
+```tsx
+import React from 'react';
+import { ButtonProps } from './Button.types';
+import './Button.styles.scss';
+
+const Button: React.FC<ButtonProps> = ({
+  children,
+  variant = 'primary',
+  disabled = false,
+  onClick,
+}) => {
+  return (
+    <button className={`button button--${variant}`} disabled={disabled} onClick={onClick}>
+      {children}
+    </button>
+  );
+};
+
+export default Button;
+```
+
+**3. `Button.styles.scss`** - BEM styles with tokens:
+
+```scss
+.button {
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: var(--font-size-md);
+  border: none;
+  cursor: pointer;
+
+  &--primary {
+    background-color: var(--color-primary);
+    color: var(--color-background);
+  }
+
+  &--secondary {
+    background-color: var(--color-secondary);
+    color: var(--color-background);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+```
+
+**4. `Button.test.tsx`** - Vitest tests (minimum 80% coverage):
+
+```tsx
+import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi } from 'vitest';
+import Button from './Button';
+
+describe('Button', () => {
+  it('renders children correctly', () => {
+    render(<Button>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeInTheDocument();
+  });
+
+  it('calls onClick when clicked', () => {
+    const handleClick = vi.fn();
+    render(<Button onClick={handleClick}>Click me</Button>);
+    fireEvent.click(screen.getByText('Click me'));
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  it('is disabled when disabled prop is true', () => {
+    render(<Button disabled>Click me</Button>);
+    expect(screen.getByText('Click me')).toBeDisabled();
+  });
+});
+```
+
+**5. `index.ts`** - Barrel export:
+
+```ts
+export { default } from './Button';
+export type { ButtonProps } from './Button.types';
+```
+
+---
+
+### 3. 🎨 Styling Rules
+
+#### BEM Methodology (Mandatory)
+
+**Block Element Modifier** naming convention:
+
+- **Block:** `.button`
+- **Element:** `.button__icon`
+- **Modifier:** `.button--primary`
+
+**SCSS Nesting:**
+
+```scss
+.card {
+  // Block styles
+
+  &__header {
+    // Element styles
+
+    &--active {
+      // Modifier styles
     }
-    ```
+  }
 
-#### D. TypeScript
+  &--featured {
+    // Block modifier
+  }
+}
+```
 
-- **Strict Typing:** Explicitly define types for props/state. Move complex types to `[Component].types.ts`.
-- **Avoid `any`:** Strict prohibition on `any`.
+#### Design Token Usage (Mandatory)
+
+**❌ NEVER do this:**
+
+```scss
+.button {
+  background-color: #0070f3; /* Hardcoded value */
+  padding: 16px; /* Hardcoded value */
+}
+```
+
+**✅ ALWAYS do this:**
+
+```scss
+.button {
+  background-color: var(--color-primary);
+  padding: var(--spacing-md);
+}
+```
+
+#### Style Import Pattern
+
+Import styles in the component file:
+
+```tsx
+import './Button.styles.scss'; // NOT: import styles from './Button.module.scss'
+```
 
 ---
 
-### 4. 🚫 Restrictions and Priorities
+### 4. 📝 TypeScript Standards
 
-#### ⚠️ Mandatory Prerequisites: Global CSS Tokens
+#### Strict Typing Requirements
 
-- **CSS Tokens Check:** BEFORE generating any component code, **ALWAYS** check for the existence of `src/app/styles/variables.css`.
-- **Creation Mandate:** If `src/app/styles/variables.css` is **not present**, **IMMEDIATELY create it** with basic tokens.
-- **Token Usage:** Component styles **must** reference tokens (`var(--token-name)`) for color, spacing, and typography; **never** hardcoded values.
+**❌ FORBIDDEN:**
 
-> **Required `variables.css` Starter Example:**
->
-> ```css
-> :root {
->   /* Colors */
->   --color-primary: #0070f3;
->   --color-text: #333;
->   /* Spacing Scale */
->   --spacing-sm: 8px;
->   --spacing-md: 16px;
-> }
-> ```
+```tsx
+const Button = (props: any) => { ... }  // NO 'any' type
+```
+
+**✅ REQUIRED:**
+
+```tsx
+interface ButtonProps {
+  children: React.ReactNode;
+  onClick?: () => void;
+}
+
+const Button: React.FC<ButtonProps> = ({ children, onClick }) => { ... }
+```
+
+#### Type Organization
+
+- **Simple types:** Can stay in component file
+- **Complex types:** Move to `[Component].types.ts`
+- **Shared types:** Consider creating `src/types/` folder
+
+#### Export Pattern
+
+**Component file (`Button.tsx`):**
+
+```tsx
+export default Button; // Default export
+```
+
+**Barrel file (`index.ts`):**
+
+```ts
+export { default } from './Button';
+export type { ButtonProps } from './Button.types';
+```
 
 ---
 
-- **Class Components:** Forbidden. Use **Functional Components** and **Hooks**.
-- **Data Fetching:** Prefer Next.js Server Components (`async/await`) for data fetching. Use `SWR` or `React Query` for client-side updates.
-- **Security:** Sanitize inputs; avoid `dangerouslySetInnerHTML`.
-- **Import Aliases:** Always use absolute imports (e.g., `import { Button } from "@/components/atoms/Button";`).
+### 5. 🧪 Testing Requirements
+
+#### Coverage Standards
+
+- **Minimum:** 80% code coverage for all components
+- **Test Location:** Colocated with component (`Button.test.tsx`)
+- **Framework:** Vitest + React Testing Library + Playwright
+
+#### What to Test
+
+1. **Rendering:** Component renders correctly
+2. **Props:** All props work as expected
+3. **Interactions:** User interactions trigger correct behavior
+4. **Accessibility:** Basic a11y checks (use Storybook addon for comprehensive testing)
+5. **Edge Cases:** Disabled states, error states, empty states
+
+#### Test File Template
+
+```tsx
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
+import ComponentName from './ComponentName';
+
+describe('ComponentName', () => {
+  it('should render correctly', () => {
+    render(<ComponentName />);
+    // Add assertions
+  });
+
+  // Add more tests...
+});
+```
+
+---
+
+### 6. 🚫 Restrictions & Mandates
+
+#### Absolute Prohibitions
+
+- ❌ **NO** class components (use functional components only)
+- ❌ **NO** CSS Modules (`.module.scss`)
+- ❌ **NO** `any` type in TypeScript
+- ❌ **NO** hardcoded style values (use tokens)
+- ❌ **NO** `dangerouslySetInnerHTML` (security risk)
+
+#### Mandatory Requirements
+
+- ✅ **MUST** create all 5 files for every component
+- ✅ **MUST** use BEM methodology for CSS class names
+- ✅ **MUST** reference design tokens for all style values
+- ✅ **MUST** achieve 80% test coverage minimum
+- ✅ **MUST** use TypeScript strict mode
+- ✅ **MUST** check for `variables.css` before creating components
+
+---
+
+### 7. 📚 Storybook Integration
+
+When creating components, also create a Storybook story:
+
+**`Button.stories.tsx`:**
+
+```tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import Button from './Button';
+
+const meta: Meta<typeof Button> = {
+  title: 'Atoms/Button',
+  component: Button,
+  tags: ['autodocs'],
+};
+
+export default meta;
+type Story = StoryObj<typeof Button>;
+
+export const Primary: Story = {
+  args: {
+    children: 'Primary Button',
+    variant: 'primary',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    children: 'Secondary Button',
+    variant: 'secondary',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    children: 'Disabled Button',
+    disabled: true,
+  },
+};
+```
+
+---
+
+### 8. ✅ Pre-Submission Checklist
+
+Before considering a component complete, verify:
+
+- [ ] `src/app/styles/variables.css` exists
+- [ ] All 5 required files created
+- [ ] BEM methodology used in SCSS
+- [ ] All styles use design tokens (no hardcoded values)
+- [ ] TypeScript strict mode passes (no `any` types)
+- [ ] Tests written and passing (80%+ coverage)
+- [ ] Storybook story created
+- [ ] Component exported via barrel file
+- [ ] ESLint passes (`npm run lint`)
+- [ ] Prettier formatting applied (`npm run format`)
